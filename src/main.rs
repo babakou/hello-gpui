@@ -1,6 +1,12 @@
+use gpui_component::table::Table;
+
+mod compressed_files_table;
+
 struct HelloWorld {
     folder_path: gpui::Entity<gpui_component::input::InputState>,
     sevenzip_exec_path: gpui::Entity<gpui_component::input::InputState>,
+    extension: gpui::Entity<gpui_component::input::InputState>,
+    files: gpui::Entity<gpui_component::table::TableState<compressed_files_table::CompressedFilesTable>>,
 }
 
 impl gpui::Render for HelloWorld {
@@ -23,11 +29,18 @@ impl gpui::Render for HelloWorld {
             .h_flex()
             .child("7z Executable: ")
             .child(Input::new(&self.sevenzip_exec_path));
+
+        let extension_view = div()
+            .h_flex()
+            .child("Extension: ")
+            .child(Input::new(&self.extension));
         
         div()
             .v_flex() //組み立てた行パーツを縦並びにしたいので、v_flex()を使う
             .child(folder_input_view)
             .child(sevenzip_exec_view)
+            .child(extension_view)
+            .child(Table::new(&self.files))
     }
 }
 
@@ -55,8 +68,21 @@ fn main() {
             let sevenzip_exec_path_input = cx.new(
                 |cx| gpui_component::input::InputState::new(window, cx).placeholder("Enter 7z executable")
             );
+            //圧縮対象拡張子の入力フォームのEntityを作成
+            let extension_input = cx.new(
+                |cx| gpui_component::input::InputState::new(window, cx).placeholder("Extension")
+            );
+            //圧縮ファイルテーブルのEntityを作成
+            let file_table_entity = compressed_files_table::CompressedFilesTable::new(window, cx);
 
-            let view = cx.new(|_| HelloWorld {folder_path: folder_path_input, sevenzip_exec_path: sevenzip_exec_path_input});
+            let view = cx.new(
+                |_|
+                HelloWorld {
+                    folder_path: folder_path_input,
+                    sevenzip_exec_path: sevenzip_exec_path_input,
+                    extension: extension_input,
+                    files: file_table_entity,
+                });
 
             // This first level on the window, should be a Root.
             cx.new(|cx| Root::new(view, window, cx))
