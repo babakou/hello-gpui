@@ -1,5 +1,6 @@
 struct HelloWorld {
-    folder_path: gpui::Entity<gpui_component::input::InputState>
+    folder_path: gpui::Entity<gpui_component::input::InputState>,
+    sevenzip_exec_path: gpui::Entity<gpui_component::input::InputState>,
 }
 
 impl gpui::Render for HelloWorld {
@@ -7,11 +8,26 @@ impl gpui::Render for HelloWorld {
         use gpui::*;
         use gpui_component::StyledExt;
         use gpui_component::input::Input;
+        use gpui_component::button::Button;
 
-        div()
+        let folder_input_view = div()
             .h_flex() //ラベルとフォルダパス入力フォームを横並びにしたいのでh_flex()を使う
             .child("Folder path: ")
             .child(Input::new(&self.folder_path))
+            .child(
+                Button::new("choose_folder")
+                .label("Choose")
+            );
+
+        let sevenzip_exec_view = div()
+            .h_flex()
+            .child("7z Executable: ")
+            .child(Input::new(&self.sevenzip_exec_path));
+        
+        div()
+            .v_flex() //組み立てた行パーツを縦並びにしたいので、v_flex()を使う
+            .child(folder_input_view)
+            .child(sevenzip_exec_view)
     }
 }
 
@@ -35,8 +51,12 @@ fn main() {
             let folder_path_input = cx.new(
                 |cx| gpui_component::input::InputState::new(window, cx).placeholder("Enter folder path...")
             );
+            //7z実行パスの入力フォームのEntityを作成
+            let sevenzip_exec_path_input = cx.new(
+                |cx| gpui_component::input::InputState::new(window, cx).placeholder("Enter 7z executable")
+            );
 
-            let view = cx.new(|_| HelloWorld {folder_path: folder_path_input});
+            let view = cx.new(|_| HelloWorld {folder_path: folder_path_input, sevenzip_exec_path: sevenzip_exec_path_input});
 
             // This first level on the window, should be a Root.
             cx.new(|cx| Root::new(view, window, cx))
