@@ -1,12 +1,17 @@
 struct HelloWorld {
+    folder_path: gpui::Entity<gpui_component::input::InputState>
 }
 
 impl gpui::Render for HelloWorld {
     fn render(&mut self, _window: &mut gpui::Window, _cx: &mut gpui::Context<Self>) -> impl gpui::IntoElement {
         use gpui::*;
+        use gpui_component::StyledExt;
+        use gpui_component::input::Input;
 
         div()
-            .child("hello world")
+            .h_flex() //ラベルとフォルダパス入力フォームを横並びにしたいのでh_flex()を使う
+            .child("Folder path: ")
+            .child(Input::new(&self.folder_path))
     }
 }
 
@@ -26,7 +31,12 @@ fn main() {
             ..Default::default()
         };
         cx.open_window(window_options, |window, cx| {
-            let view = cx.new(|_| HelloWorld {});
+            //フォルダパスの入力フォームのEntityを作成
+            let folder_path_input = cx.new(
+                |cx| gpui_component::input::InputState::new(window, cx).placeholder("Enter folder path...")
+            );
+
+            let view = cx.new(|_| HelloWorld {folder_path: folder_path_input});
 
             // This first level on the window, should be a Root.
             cx.new(|cx| Root::new(view, window, cx))
