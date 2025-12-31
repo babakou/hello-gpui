@@ -34,13 +34,17 @@ impl gpui::Render for HelloWorld {
             .h_flex()
             .child("Extension: ")
             .child(Input::new(&self.extension));
+
+        let table = div()
+            .h(px(100.0))
+            .child(Table::new(&self.files));
         
         div()
             .v_flex() //組み立てた行パーツを縦並びにしたいので、v_flex()を使う
             .child(folder_input_view)
             .child(sevenzip_exec_view)
             .child(extension_view)
-            .child(Table::new(&self.files))
+            .child(table)
     }
 }
 
