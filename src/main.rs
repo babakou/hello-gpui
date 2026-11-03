@@ -13,13 +13,30 @@ impl HelloWorld {
     fn on_choose_clicked(
         &mut self,
         _event: &gpui::ClickEvent,
-        _window: &mut gpui::Window,
+        window: &mut gpui::Window,
         cx: &mut gpui::Context<Self>,
     ) {
-        self.files.update(cx, |table, cx| {
-            table.delegate_mut().push_row("ccc.txt", 30);
-            cx.notify();
-        });
+        let input = self.folder_path.clone();
+
+        cx.spawn_in(window, async move |this, cx| {
+            let Some(folder) = rfd::AsyncFileDialog::new()
+                .pick_folder()
+                .await
+            else {
+                // キャンセル時は入力欄を変更しない
+                return;
+            };
+
+            let path = folder.path().to_string_lossy().into_owned();
+
+            this.update_in(cx, |_, window, cx| {
+                input.update(cx, |state, cx| {
+                    state.set_value(path, window, cx);
+                });
+            })
+            .ok();
+        })
+        .detach();
     }
 
     fn choose_sevenzip(
