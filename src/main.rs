@@ -66,8 +66,8 @@ impl gpui::Render for HelloWorld {
             .child(Input::new(&self.folder_path))
             .child(
                 Button::new("choose_folder")
-                .label("Choose")
-                .on_click(cx.listener(Self::on_choose_clicked))
+                    .label("Choose root folder")
+                    .on_click(cx.listener(Self::on_choose_clicked))
             );
 
         let sevenzip_exec_view = div()
