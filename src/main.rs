@@ -2,6 +2,7 @@ use gpui_component::table::Table;
 use std::future::Future;
 
 mod compressed_files_table;
+mod util;
 
 struct HelloWorld {
     folder_path: gpui::Entity<gpui_component::input::InputState>,
