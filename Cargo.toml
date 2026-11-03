@@ -7,3 +7,4 @@ edition = "2024"
 gpui = { version = "0.2.2" }
 gpui-component = { version = "0.5.0" }
 anyhow = { version = "1.0.100" }
+rfd = { version = "0.17.2" }

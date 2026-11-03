@@ -21,6 +21,36 @@ impl HelloWorld {
             cx.notify();
         });
     }
+
+    fn choose_sevenzip(
+            &mut self,
+            _event: &gpui::ClickEvent,
+            window: &mut gpui::Window,
+            cx: &mut gpui::Context<Self>,
+    ) {
+        let input = self.sevenzip_exec_path.clone();
+
+        cx.spawn_in(window, async move |this, cx| {
+            let Some(file) = rfd::AsyncFileDialog::new()
+                .add_filter("7-Zip executable", &["exe"])
+                .pick_file()
+                .await
+            else {
+                // キャンセル時は入力欄を変更しない
+                return;
+            };
+
+            let path = file.path().to_string_lossy().into_owned();
+
+            this.update_in(cx, |_, window, cx| {
+                input.update(cx, |state, cx| {
+                    state.set_value(path, window, cx);
+                });
+            })
+            .ok();
+        })
+        .detach();
+    }
 }
 
 impl gpui::Render for HelloWorld {
@@ -43,7 +73,12 @@ impl gpui::Render for HelloWorld {
         let sevenzip_exec_view = div()
             .h_flex()
             .child("7z Executable: ")
-            .child(Input::new(&self.sevenzip_exec_path));
+            .child(Input::new(&self.sevenzip_exec_path))
+            .child(
+                Button::new("choose_7zip")
+                    .label("Choose 7z.exe")
+                    .on_click(cx.listener(Self::choose_sevenzip))
+            );
 
         let extension_view = div()
             .h_flex()
