@@ -1,4 +1,5 @@
 use gpui_component::table::Table;
+use std::future::Future;
 
 mod compressed_files_table;
 
@@ -17,26 +18,9 @@ impl HelloWorld {
         cx: &mut gpui::Context<Self>,
     ) {
         let input = self.folder_path.clone();
+        let picker = rfd::AsyncFileDialog::new().pick_folder();
 
-        cx.spawn_in(window, async move |this, cx| {
-            let Some(folder) = rfd::AsyncFileDialog::new()
-                .pick_folder()
-                .await
-            else {
-                // キャンセル時は入力欄を変更しない
-                return;
-            };
-
-            let path = folder.path().to_string_lossy().into_owned();
-
-            this.update_in(cx, |_, window, cx| {
-                input.update(cx, |state, cx| {
-                    state.set_value(path, window, cx);
-                });
-            })
-            .ok();
-        })
-        .detach();
+        self.set_input_from_picker(input, window, cx, picker);
     }
 
     fn choose_sevenzip(
@@ -46,13 +30,25 @@ impl HelloWorld {
             cx: &mut gpui::Context<Self>,
     ) {
         let input = self.sevenzip_exec_path.clone();
+        let picker = rfd::AsyncFileDialog::new()
+            .add_filter("7-Zip executable", &["exe"])
+            .pick_file();
 
+        self.set_input_from_picker(input, window, cx, picker);
+    }
+
+    fn set_input_from_picker<F>(
+        &mut self,
+        input: gpui::Entity<gpui_component::input::InputState>,
+        window: &mut gpui::Window,
+        cx: &mut gpui::Context<Self>,
+        picker: F,
+    )
+    where
+        F: Future<Output = Option<rfd::FileHandle>> + 'static,
+    {
         cx.spawn_in(window, async move |this, cx| {
-            let Some(file) = rfd::AsyncFileDialog::new()
-                .add_filter("7-Zip executable", &["exe"])
-                .pick_file()
-                .await
-            else {
+            let Some(file) = picker.await else {
                 // キャンセル時は入力欄を変更しない
                 return;
             };
