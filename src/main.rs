@@ -1,5 +1,6 @@
 use gpui_component::table::Table;
 use std::future::Future;
+use std::path::Path;
 
 mod compressed_files_table;
 mod util;
@@ -65,6 +66,29 @@ impl HelloWorld {
         })
         .detach();
     }
+
+    fn scan_files(
+        &mut self,
+        _event: &gpui::ClickEvent,
+        _window: &mut gpui::Window,
+        cx: &mut gpui::Context<Self>,
+    ) {
+        let root = self.folder_path.read(cx).value().to_string();
+        let extension = self.extension.read(cx).value().to_string();
+
+        let rows = match util::scan_files(Path::new(&root), &extension) {
+            Ok(rows) => rows,
+            Err(error) => {
+                eprintln!("ファイル走査に失敗しました: {error}");
+                return;
+            }
+        };
+
+        self.files.update(cx, |table, cx| {
+            table.delegate_mut().replace_rows(rows);
+            cx.notify();
+        });
+    }
 }
 
 impl gpui::Render for HelloWorld {
@@ -101,6 +125,7 @@ impl gpui::Render for HelloWorld {
             .child(
                 Button::new("scan_files")
                     .label("Scan")
+                    .on_click(cx.listener(Self::scan_files))
             );
 
         let table = div()
