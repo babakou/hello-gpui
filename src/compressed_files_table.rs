@@ -16,8 +16,6 @@ impl CompressedFilesTable {
         use gpui_component::table::Column;
         let delegate = Self {
             data: vec![
-                CompressedFiles { filename: "aaa.txt".to_string(), size: 10 },
-                CompressedFiles { filename: "bbb.txt".to_string(), size: 20 },
             ],
             columns: vec![
                 Column::new("filename", "File name"),
