@@ -10,6 +10,7 @@ pub struct CompressedFilesTable {
     columns: Vec<gpui_component::table::Column>,
 }
 
+
 impl CompressedFilesTable {
     pub fn new(window: &mut gpui::Window, cx: &mut gpui::App) -> gpui::Entity<gpui_component::table::TableState<CompressedFilesTable>> {
         use gpui_component::table::Column;
@@ -27,6 +28,13 @@ impl CompressedFilesTable {
         cx.new(
             |cx| gpui_component::table::TableState::new(delegate, window, cx)
         )
+    }
+
+    pub fn push_row(&mut self, filename: &str, size: usize) {
+        self.data.push( CompressedFiles {
+            filename: filename.to_string(),
+            size,
+        })
     }
 }
 

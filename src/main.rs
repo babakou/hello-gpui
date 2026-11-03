@@ -9,8 +9,22 @@ struct HelloWorld {
     files: gpui::Entity<gpui_component::table::TableState<compressed_files_table::CompressedFilesTable>>,
 }
 
+impl HelloWorld {
+    fn on_choose_clicked(
+        &mut self,
+        _event: &gpui::ClickEvent,
+        _window: &mut gpui::Window,
+        cx: &mut gpui::Context<Self>,
+    ) {
+        self.files.update(cx, |table, cx| {
+            table.delegate_mut().push_row("ccc.txt", 30);
+            cx.notify();
+        });
+    }
+}
+
 impl gpui::Render for HelloWorld {
-    fn render(&mut self, _window: &mut gpui::Window, _cx: &mut gpui::Context<Self>) -> impl gpui::IntoElement {
+    fn render(&mut self, _window: &mut gpui::Window, cx: &mut gpui::Context<Self>) -> impl gpui::IntoElement {
         use gpui::*;
         use gpui_component::StyledExt;
         use gpui_component::input::Input;
@@ -23,6 +37,7 @@ impl gpui::Render for HelloWorld {
             .child(
                 Button::new("choose_folder")
                 .label("Choose")
+                .on_click(cx.listener(Self::on_choose_clicked))
             );
 
         let sevenzip_exec_view = div()
@@ -38,7 +53,7 @@ impl gpui::Render for HelloWorld {
         let table = div()
             .h(px(100.0))
             .child(Table::new(&self.files));
-        
+
         div()
             .v_flex() //組み立てた行パーツを縦並びにしたいので、v_flex()を使う
             .child(folder_input_view)
