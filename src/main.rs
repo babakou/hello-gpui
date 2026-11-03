@@ -51,10 +51,11 @@ impl gpui::Render for HelloWorld {
             .child(Input::new(&self.extension));
 
         let table = div()
-            .h(px(100.0))
+            .flex_1()
             .child(Table::new(&self.files));
 
         div()
+            .size_full()
             .v_flex() //組み立てた行パーツを縦並びにしたいので、v_flex()を使う
             .child(folder_input_view)
             .child(sevenzip_exec_view)
