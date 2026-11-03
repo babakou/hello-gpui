@@ -96,7 +96,11 @@ impl gpui::Render for HelloWorld {
         let extension_view = div()
             .h_flex()
             .child("Extension: ")
-            .child(Input::new(&self.extension));
+            .child(Input::new(&self.extension))
+            .child(
+                Button::new("scan_files")
+                    .label("Scan")
+            );
 
         let table = div()
             .flex_1()
