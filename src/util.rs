@@ -37,7 +37,7 @@ fn collect_matching_files(
     Ok(())
 }
 
-fn scan_files(root: &Path, extension: &str) -> io::Result<Vec<(String, u64)>> {
+pub fn scan_files(root: &Path, extension: &str) -> io::Result<Vec<(String, u64)>> {
     if !root.is_dir() {
         return Err(io::Error::new(
             io::ErrorKind::NotFound,
