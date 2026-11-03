@@ -2,7 +2,7 @@ use gpui::AppContext;
 
 pub struct CompressedFiles {
     filename: String,
-    size: usize,
+    size: u64,
 }
 
 pub struct CompressedFilesTable {
@@ -28,14 +28,14 @@ impl CompressedFilesTable {
         )
     }
 
-    pub fn push_row(&mut self, filename: &str, size: usize) {
+    pub fn push_row(&mut self, filename: &str, size: u64) {
         self.data.push( CompressedFiles {
             filename: filename.to_string(),
             size,
         })
     }
 
-    pub fn replace_rows(&mut self, rows: Vec<(String, usize)>) {
+    pub fn replace_rows(&mut self, rows: Vec<(String, u64)>) {
         self.data = rows
             .into_iter()
             .map(|(filename, size)| CompressedFiles { filename, size })
