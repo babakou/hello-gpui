@@ -34,6 +34,13 @@ impl CompressedFilesTable {
             size,
         })
     }
+
+    pub fn replace_rows(&mut self, rows: Vec<(String, usize)>) {
+        self.data = rows
+            .into_iter()
+            .map(|(filename, size)| CompressedFiles { filename, size })
+            .collect();
+    }
 }
 
 impl gpui_component::table::TableDelegate for CompressedFilesTable {
