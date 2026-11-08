@@ -10,6 +10,7 @@ struct HelloWorld {
     sevenzip_exec_path: gpui::Entity<gpui_component::input::InputState>,
     extension: gpui::Entity<gpui_component::input::InputState>,
     files: gpui::Entity<gpui_component::table::TableState<compressed_files_table::CompressedFilesTable>>,
+    files_to_compress: Vec<String>,
     is_delete_originals: bool,
 }
 
@@ -84,6 +85,8 @@ impl HelloWorld {
                 return;
             }
         };
+
+        self.files_to_compress = rows.iter().map(|(path, _)| path.clone()).collect();
 
         self.files.update(cx, |table, cx| {
             table.delegate_mut().replace_rows(rows);
@@ -207,6 +210,7 @@ fn main() {
                     sevenzip_exec_path: sevenzip_exec_path_input,
                     extension: extension_input,
                     files: file_table_entity,
+                    files_to_compress: Vec::new(),
                     is_delete_originals: false,
                 });
 
