@@ -93,6 +93,47 @@ impl HelloWorld {
             cx.notify();
         });
     }
+
+    fn compress_files(
+        &mut self,
+        _event: &gpui::ClickEvent,
+        window: &mut gpui::Window,
+        cx: &mut gpui::Context<Self>,
+    ) {
+        let seven_zip = self.sevenzip_exec_path.read(cx).value().to_string();
+        let root = self.folder_path.read(cx).value().to_string();
+        let files = self.files_to_compress.clone();
+        let delete_after_compression = self.is_delete_originals;
+
+        if files.is_empty() {
+            eprintln!("圧縮対象ファイルがありません。先に Scan を実行してください。");
+            return;
+        }
+
+        cx.spawn_in(window, async move |this, cx| {
+            let result = cx
+                .background_executor()
+                .spawn(async move {
+                    util::compress_and_delete_files(
+                        Path::new(&seven_zip),
+                        Path::new(&root),
+                        &files,
+                        delete_after_compression
+                    )
+                })
+                .await;
+
+            if let Err(error) = result {
+                eprintln!("圧縮に失敗しました: {error:#}");
+            } else {
+                eprintln!("圧縮が完了しました。");
+            }
+
+            // 必要ならここでUI状態を更新する
+            this.update_in(cx, |_, _, _| {}).ok();
+        })
+        .detach();
+    }
 }
 
 impl gpui::Render for HelloWorld {
@@ -138,6 +179,7 @@ impl gpui::Render for HelloWorld {
                 Button::new("compress")
                     .label("Compress")
                     .w(gpui::px(150.))
+                    .on_click(cx.listener(Self::compress_files))
             );
 
         let delete_after_compression_control = div()
