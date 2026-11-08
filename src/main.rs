@@ -97,6 +97,7 @@ impl gpui::Render for HelloWorld {
         use gpui_component::StyledExt;
         use gpui_component::input::Input;
         use gpui_component::button::Button;
+        use gpui_component::Sizable;
 
         let folder_input_view = div()
             .h_flex() //ラベルとフォルダパス入力フォームを横並びにしたいのでh_flex()を使う
@@ -128,6 +129,13 @@ impl gpui::Render for HelloWorld {
                     .on_click(cx.listener(Self::scan_files))
             );
 
+        let compress_button = div()
+            .child(
+                Button::new("compress")
+                    .label("Compress")
+                    .w(gpui::px(150.))
+            );
+
         let table = div()
             .flex_1()
             .child(Table::new(&self.files));
@@ -138,6 +146,7 @@ impl gpui::Render for HelloWorld {
             .child(folder_input_view)
             .child(sevenzip_exec_view)
             .child(extension_view)
+            .child(compress_button)
             .child(table)
     }
 }
