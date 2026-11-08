@@ -100,16 +100,14 @@ pub fn compress_and_delete_files(
             archive.display()
         );
 
-        let options =
-            if delete_after_compress {
-                ["a", "-t7z", "-sdel"]
-            } else {
-                ["a", "-t7z"]
-            };
+        let mut options = Vec::from(["a", "-t7z"]);
+        if delete_after_compress {
+            options.push("-sdel");
+        }
 
         let status = Command::new(&seven_zip)
             .current_dir(&root)
-            .args(delete_after_compress)
+            .args(options)
             .arg(&archive)
             .arg(relative_source)
             .status()?;
