@@ -18,8 +18,8 @@ impl CompressedFilesTable {
             data: vec![
             ],
             columns: vec![
-                Column::new("filename", "File name"),
-                Column::new("size", "Size"),
+                Column::new("filename", "File name").width(gpui::px(650.)),
+                Column::new("size", "Size").width(gpui::px(150.)),
             ]
         };
 

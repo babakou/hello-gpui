@@ -154,7 +154,7 @@ fn main() {
         gpui_component::init(cx);
 
         let window_options = gpui::WindowOptions {
-            window_bounds: Some(gpui::WindowBounds::centered(gpui::size(gpui::px(400.), gpui::px(200.)), cx)),
+            window_bounds: Some(gpui::WindowBounds::centered(gpui::size(gpui::px(800.), gpui::px(600.)), cx)),
             ..Default::default()
         };
         cx.open_window(window_options, |window, cx| {
