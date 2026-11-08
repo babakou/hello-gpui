@@ -1,6 +1,7 @@
 use std::fs;
 use std::io;
 use std::path::Path;
+use std::process::Command;
 
 fn collect_matching_files(
     root: &Path,
@@ -57,4 +58,67 @@ pub fn scan_files(root: &Path, extension: &str) -> io::Result<Vec<(String, u64)>
     collect_matching_files(root, root, extension, &mut rows)?;
 
     Ok(rows)
+}
+
+pub fn compress_and_delete_files(
+    seven_zip: &Path,
+    root: &Path,
+    relative_files: &[String],
+    delete_after_compress: bool,
+) -> anyhow::Result<()> {
+    let seven_zip = seven_zip.canonicalize()?;
+    anyhow::ensure!(seven_zip.is_file(), "7-Zip executable not found");
+
+    let root = root.canonicalize()?;
+
+    for relative_file in relative_files {
+        let relative_path = Path::new(relative_file);
+        anyhow::ensure!(
+            !relative_path.is_absolute(),
+            "Expected a relative file path: {relative_file}"
+        );
+
+        let source = root.join(relative_path).canonicalize()?;
+        anyhow::ensure!(
+            source.starts_with(&root) && source.is_file(),
+            "File is outside the root folder or is not a file: {relative_file}"
+        );
+
+        let relative_source = source.strip_prefix(&root)?;
+
+        // 例: photo.jpg → photo.jpg.7z（元ファイルの隣に作成）
+        let mut archive_name = source
+            .file_name()
+            .ok_or_else(|| anyhow::anyhow!("Invalid file name: {relative_file}"))?
+            .to_os_string();
+        archive_name.push(".7z");
+        let archive = source.with_file_name(archive_name);
+
+        anyhow::ensure!(
+            !archive.exists(),
+            "Archive already exists: {}",
+            archive.display()
+        );
+
+        let options =
+            if delete_after_compress {
+                ["a", "-t7z", "-sdel"]
+            } else {
+                ["a", "-t7z"]
+            };
+
+        let status = Command::new(&seven_zip)
+            .current_dir(&root)
+            .args(delete_after_compress)
+            .arg(&archive)
+            .arg(relative_source)
+            .status()?;
+
+        anyhow::ensure!(
+            status.success(),
+            "7-Zip compression failed: {relative_file}"
+        );
+    }
+
+    Ok(())
 }
