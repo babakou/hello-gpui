@@ -17,6 +17,12 @@ fn collect_matching_files(
         if file_type.is_dir() {
             collect_matching_files(root, &path, extension, rows)?;
         } else if file_type.is_file() {
+            let metadata = entry.metadata()?;
+
+            if !is_locally_available(&metadata) {
+                continue;
+            }
+
             let matches = path
                 .extension()
                 .and_then(|ext| ext.to_str())
@@ -29,7 +35,7 @@ fn collect_matching_files(
                     .to_string_lossy()
                     .replace('\\', "/");
 
-                let size = entry.metadata()?.len();
+                let size = metadata.len();
                 rows.push((relative_path, size));
             }
         }
@@ -119,4 +125,24 @@ pub fn compress_and_delete_files(
     }
 
     Ok(())
+}
+
+#[cfg(windows)]
+fn is_locally_available(metadata: &fs::Metadata) -> bool {
+    use std::os::windows::fs::MetadataExt;
+
+    const FILE_ATTRIBUTE_OFFLINE: u32 = 0x0000_1000;
+    const FILE_ATTRIBUTE_RECALL_ON_OPEN: u32 = 0x0004_0000;
+    const FILE_ATTRIBUTE_RECALL_ON_DATA_ACCESS: u32 = 0x0040_0000;
+
+    let unavailable_attributes = FILE_ATTRIBUTE_OFFLINE
+        | FILE_ATTRIBUTE_RECALL_ON_OPEN
+        | FILE_ATTRIBUTE_RECALL_ON_DATA_ACCESS;
+
+    metadata.file_attributes() & unavailable_attributes == 0
+}
+
+#[cfg(not(windows))]
+fn is_locally_available(_metadata: &fs::Metadata) -> bool {
+    true
 }
