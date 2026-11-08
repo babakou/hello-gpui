@@ -10,6 +10,7 @@ struct HelloWorld {
     sevenzip_exec_path: gpui::Entity<gpui_component::input::InputState>,
     extension: gpui::Entity<gpui_component::input::InputState>,
     files: gpui::Entity<gpui_component::table::TableState<compressed_files_table::CompressedFilesTable>>,
+    is_delete_originals: bool,
 }
 
 impl HelloWorld {
@@ -97,7 +98,7 @@ impl gpui::Render for HelloWorld {
         use gpui_component::StyledExt;
         use gpui_component::input::Input;
         use gpui_component::button::Button;
-        use gpui_component::Sizable;
+        use gpui_component::checkbox::Checkbox;
 
         let folder_input_view = div()
             .h_flex() //ラベルとフォルダパス入力フォームを横並びにしたいのでh_flex()を使う
@@ -136,6 +137,23 @@ impl gpui::Render for HelloWorld {
                     .w(gpui::px(150.))
             );
 
+        let delete_after_compression_control = div()
+            .child(
+                Checkbox::new("delete_after_compression_control")
+                    .label("Delete after the compression")
+                    .checked(self.is_delete_originals)
+                    .on_click(cx.listener(|this: &mut HelloWorld, checked: &bool, _, cx| {
+                        this.is_delete_originals = *checked;
+                        cx.notify();
+                    }))
+            );
+
+        let compress_view = div()
+            .h_flex()
+            .child(compress_button)
+            .gap_2()
+            .child(delete_after_compression_control);
+
         let table = div()
             .flex_1()
             .child(Table::new(&self.files));
@@ -146,7 +164,7 @@ impl gpui::Render for HelloWorld {
             .child(folder_input_view)
             .child(sevenzip_exec_view)
             .child(extension_view)
-            .child(compress_button)
+            .child(compress_view)
             .child(table)
     }
 }
@@ -189,6 +207,7 @@ fn main() {
                     sevenzip_exec_path: sevenzip_exec_path_input,
                     extension: extension_input,
                     files: file_table_entity,
+                    is_delete_originals: false,
                 });
 
             // This first level on the window, should be a Root.
